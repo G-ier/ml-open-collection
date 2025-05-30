@@ -45,12 +45,20 @@ A lightweight Retrieval-Augmented Generation (RAG) pipeline implementation using
 - Sentence transformer embeddings (E5-base-v2)
 - Configurable chunking strategies
 - Custom tokenizer integration support
+- Adaptive retrieval with model-specific chunk sizes
+- Intelligent reranking for improved relevance
+
+**Retrieval Configuration:**
+- **Jina AI Embedding Model**: Retrieves 10 chunks with reranking
+- **intfloat/e5-base-v2 Model**: Retrieves 20 chunks with reranking
+- Both configurations apply reranking to improve result quality and relevance
 
 **Key Techniques:**
 - Document chunking with overlap
 - Vector similarity search
 - Embedding-based retrieval
 - Modular pipeline architecture
+- Model-adaptive retrieval strategies
 
 ## 📋 Requirements
 
