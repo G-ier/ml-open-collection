@@ -60,6 +60,30 @@ A lightweight Retrieval-Augmented Generation (RAG) pipeline implementation using
 - Modular pipeline architecture
 - Model-adaptive retrieval strategies
 
+### 4. Core ML Algorithms (`core/` folder)
+A comprehensive collection of fundamental machine learning algorithms implemented from scratch for educational purposes.
+
+**Implementations:**
+- **Linear Regression**: Basic linear regression with gradient descent optimization
+- **Polynomial Regression**: Extension of linear regression for non-linear relationships
+- **Logistic Regression**: Binary and multi-class classification implementation
+- **Multi-Layer Perceptron (MLP)**: Neural network with configurable hidden layers
+- **K-Means Clustering**: Unsupervised clustering algorithm with centroid optimization
+
+**Features:**
+- Pure NumPy implementations for educational clarity
+- Comprehensive documentation and comments
+- Visualization utilities for understanding algorithm behavior
+- Modular design for easy experimentation and modification
+- Performance comparison utilities
+
+**Key Techniques:**
+- Gradient descent optimization
+- Backpropagation for neural networks
+- Cross-validation and model evaluation
+- Feature scaling and normalization
+- Convergence criteria and early stopping
+
 ## 📋 Requirements
 
 All implementations share common dependencies listed in `requirements.txt`:
@@ -132,7 +156,32 @@ file_path = "path/to/your/document.pdf"
 rag_pipeline(query, file_path)
 ```
 
-## 🎯 Performance Notes
+### Core ML Algorithms
+
+```python
+# Navigate to the core directory
+cd core/
+
+# Run individual algorithms
+python linear_regression.py
+python polynomial_regression.py
+python logistic_regression.py
+python mlp.py
+python kmeans.py
+```
+
+**Configuration:**
+- Each algorithm includes configurable parameters at the top of the script
+- Modify dataset generation parameters for different problem complexities
+- Adjust hyperparameters like learning rate, epochs, and regularization
+- Enable/disable visualization for training progress and results
+
+**Output:**
+- Training progress with loss curves and accuracy metrics
+- Visualization plots for algorithm behavior and results
+- Model performance evaluation and comparison metrics
+
+## 📝 Performance Notes
 
 ### Hardware Optimization
 - **Apple Silicon**: All implementations support MPS acceleration
@@ -163,6 +212,12 @@ rag_pipeline(query, file_path)
 2. Adjust `max_length` for different context requirements
 3. Modify pooling strategy for specific use cases
 
+**Core ML Algorithms:**
+1. Modify dataset generation functions for your specific data
+2. Experiment with different optimization algorithms and learning rates
+3. Add regularization techniques for improved generalization
+4. Implement additional evaluation metrics for your use case
+
 ## 📁 Project Structure
 
 ```
@@ -172,6 +227,12 @@ rag_pipeline(query, file_path)
 ├── distilbert_finetune.py   # DistilBERT sentiment analysis
 ├── custom_tokenizer.py      # Extended context tokenizer
 ├── mini_rag.py             # RAG pipeline implementation
+├── core/                    # Core ML algorithms folder
+│   ├── linear_regression.py    # Linear regression implementation
+│   ├── polynomial_regression.py # Polynomial regression implementation
+│   ├── logistic_regression.py  # Logistic regression implementation
+│   ├── mlp.py                  # Multi-layer perceptron implementation
+│   └── kmeans.py              # K-means clustering implementation
 └── __init__.py             # Package initialization
 ```
 
@@ -182,6 +243,8 @@ Each implementation is designed to be modular and extensible. Feel free to:
 - Extend the RAG system with reranking capabilities
 - Implement additional fine-tuning strategies for DistilBERT
 - Add support for other transformer architectures
+- Enhance core ML algorithms with advanced optimization techniques
+- Add new fundamental algorithms to the core collection
 
 ## 📝 Notes
 
