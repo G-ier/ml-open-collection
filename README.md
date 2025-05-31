@@ -135,6 +135,7 @@ Advanced speech recognition implementations featuring modern deep learning archi
 **Planned Features:**
 - **Whisper-Tiny Customization**: Fine-tuning the compact Whisper model on domain-specific audio data
 - **Speech-based NER**: Named-entity-recognition directly from audio using Wav2Vec representations
+- **RL-based Interactive Online Learning**: User based corrections or affirmations for accuracy improvement.
 - **Transfer Learning**: Leveraging pre-trained models for efficient training on limited data
 - **Audio Preprocessing**: Feature extraction and normalization for optimal model performance
 - **Evaluation Metrics**: Performance assessment for both transcription accuracy and NER precision

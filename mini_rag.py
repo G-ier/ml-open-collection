@@ -1,23 +1,20 @@
-import seaborn as sns
 from langchain_community.vectorstores import Chroma
-from langchain_community.retrievers import MMRRetriever
 from sentence_transformers import SentenceTransformer
 import chromadb
 from chromadb.config import Settings
-from langchain.document_loaders import WebBaseLoader, PyPDFLoader
-from langchain_core.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import WebBaseLoader, PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from custom_tokenizer import custom_4500_token_encoder
 
 # Define the searching tool
-def search_tool(query: str, vector_db: Chroma):
+def search_tool(urls, vector_db: Chroma):
 
     # Get and downlaod relevant documents from the web
+    loader = WebBaseLoader(web_paths=urls)
+    documents = loader.load()
+    
+    return documents
 
-    pass
-
-# Download the specified documents from the web
-def download_relevant_documents(link: str):
-    pass
 
 def longer_context_encoder(chunks: list):
     
@@ -80,14 +77,14 @@ def rag_retrieval(query: str, collection: chromadb.Collection, custom_token_enco
         elements_to_return = 10
         elements_to_search = 20
 
-    # Wrap the chromadb into a mmrretriever
+    # Wrap the chromadb into a chroma vectorstore
     vectordb = Chroma(collection_name=collection.name, embedding_function=custom_4500_token_encoder, persist_directory="/Users/gier/projects/implementations/db/")
 
-    # MMRRetriever does the retrieval and reranking in one pass - lambda_mult is the trade-off between relevance and diversity
-    retriever = MMRRetriever(vectorstore=vectordb, k=elements_to_search, fetch_k=elements_to_return, lambda_mult=0.5)
+    # Use MMR search directly on the vectorstore
+    results = vectordb.max_marginal_relevance_search(query, k=elements_to_return, fetch_k=elements_to_search, lambda_mult=0.5)
 
     # Return the reranked chunks
-    return retriever.get_relevant_documents(query)
+    return results
     
 
 # Define the RAG stateful pipeline
@@ -113,3 +110,9 @@ def rag_pipeline(query: str, file_path: str):
 
     # Pass to LLM
 
+if __name__ == "__main__":
+    
+    search_tool(urls=[
+        "https://en.wikipedia.org/wiki/Machine_learning",
+        "https://docs.python.org/3/tutorial/introduction.html"
+    ], vector_db=None)
