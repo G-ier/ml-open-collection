@@ -65,10 +65,26 @@ A comprehensive collection of fundamental machine learning algorithms implemente
 
 **Implementations:**
 - **Gradient Descent** (`gradient_descent.py`): Advanced gradient descent optimizer with PyTorch integration for automatic differentiation
+- **Multi-Layer Perceptron** (`mlp.py`): Deep neural network implementation compatible with the custom gradient descent algorithm
 - **Regression Algorithms** (`regressions.py`): Unified implementation containing:
   - **Linear Regression**: Basic linear regression with gradient descent optimization
   - **Polynomial Regression**: Extension of linear regression for non-linear relationships
   - **Logistic Regression**: Binary classification implementation with sigmoid activation
+
+**Multi-Layer Perceptron Features:**
+- **Gradient Descent Compatibility**: Seamlessly integrates with the custom gradient descent optimizer
+- **Flexible Architecture**: Define any network structure with configurable layer sizes
+- **Multiple Activation Functions**: Support for ReLU, Tanh, and Sigmoid activations
+- **Weight Management**: Automatic flattening and reconstruction of weights for gradient descent compatibility
+- **Xavier Initialization**: Proper weight initialization for stable training
+- **Multiple Loss Functions**: MSE for regression, binary/multi-class cross-entropy for classification
+- **PyTorch Integration**: Uses PyTorch tensors for automatic differentiation while maintaining NumPy compatibility
+
+**MLP Architecture Support:**
+- **Regression Tasks**: Multi-output regression with configurable hidden layers
+- **Binary Classification**: Single output with sigmoid activation
+- **Multi-Class Classification**: Multiple outputs with softmax (cross-entropy loss)
+- **Deep Networks**: Support for arbitrary depth and width networks
 
 **Gradient Descent Features:**
 - **PyTorch Integration**: Automatic differentiation using PyTorch tensors for precise gradient computation
@@ -104,9 +120,32 @@ A comprehensive collection of fundamental machine learning algorithms implemente
 - Automatic differentiation with PyTorch
 - Element-wise gradient computation for vector inputs
 - Gradient descent optimization with configurable parameters
+- Deep neural network architectures
 - Feature scaling and normalization
 - Convergence criteria and early stopping
 - Synthetic data generation with noise control
+
+### 5. Automatic Speech Recognition (ASR) - Coming Soon! 🎙️
+Advanced speech recognition implementations featuring modern deep learning architectures and techniques.
+
+**Planned Implementations:**
+- **Whisper-Tiny Fine-Tuning**: Fine-tuning OpenAI's lightweight Whisper model for specific domains
+- **Wav2Vec for Named-Entity-Recognition**: Using Wav2Vec 2.0 for speech-based NER tasks
+
+**Planned Features:**
+- **Whisper-Tiny Customization**: Fine-tuning the compact Whisper model on domain-specific audio data
+- **Speech-based NER**: Named-entity-recognition directly from audio using Wav2Vec representations
+- **Transfer Learning**: Leveraging pre-trained models for efficient training on limited data
+- **Audio Preprocessing**: Feature extraction and normalization for optimal model performance
+- **Evaluation Metrics**: Performance assessment for both transcription accuracy and NER precision
+
+**Upcoming Techniques:**
+- Self-supervised speech representation learning with Wav2Vec 2.0
+- Fine-tuning strategies for lightweight transformer models
+- Speech-to-text with named-entity extraction pipeline
+- Transfer learning from large pre-trained speech models
+
+*Stay tuned for comprehensive implementations with detailed documentation and examples!*
 
 ## 📋 Requirements
 
@@ -192,39 +231,16 @@ python regressions.py --type linear
 # Test the gradient descent implementation
 python gradient_descent.py
 
+# Test the MLP implementation
+python mlp.py
+
 # Generate synthetic datasets for testing
 python data/generate_data.py
 ```
 
-**Gradient Descent Usage:**
+**Multi-Layer Perceptron Usage:**
 ```python
-from core.gradient_descent import GradientDescent
-from core.data.data_loader import DataLoader
-import torch
-import numpy as np
-
-# Load data
-loader = DataLoader()
-X, y = loader.load_1d_data()
-
-# Define a loss function (e.g., mean squared error)
-def mse_loss(w):
-    # w represents weights, implement your loss function here
-    return torch.sum((X @ w - y) ** 2) / len(y)
-
-# Initialize gradient descent
-gd = GradientDescent(learning_rate=0.01, num_iterations=1000)
-gd.set_loss_function(mse_loss)
-
-# Perform weight updates
-initial_weights = np.random.randn(X.shape[1])
-gd.set_weights(initial_weights)
-final_weights = gd.compute_weight_update()
-```
-
-**Regression Algorithms Usage:**
-```python
-from core.regressions import train_linear_regression, train_polynomial_regression, train_logistic_regression
+from core.mlp import train_mlp, MLP
 from core.data.data_loader import DataLoader
 import numpy as np
 
@@ -232,46 +248,47 @@ import numpy as np
 loader = DataLoader()
 X, y = loader.load_3d_data()
 
-# Train linear regression
-weights, predictions = train_linear_regression(X, y)
-print("Linear regression weights:", weights)
+# Train MLP for regression
+layer_sizes = [X.shape[1], 10, 5, 1]  # input -> 10 -> 5 -> 1 output
+weights, mlp = train_mlp(X, y, layer_sizes, 
+                        activation='relu', 
+                        loss_type='mse',
+                        learning_rate=0.01, 
+                        num_iterations=100)
 
-# Train polynomial regression
-poly_weights, poly_predictions = train_polynomial_regression(X[:, 0], y, degree=2)
-print("Polynomial regression weights:", poly_weights)
+# Make predictions
+predictions = mlp.predict(X)
+print("Training MSE:", np.mean((predictions.flatten() - y) ** 2))
 
-# For binary classification, prepare binary labels
-y_binary = (y > np.median(y)).astype(int)
-logistic_weights, logistic_predictions = train_logistic_regression(X, y_binary)
-print("Logistic regression weights:", logistic_weights)
+# Binary classification example
+y_binary = (y > np.median(y)).astype(float)
+weights_binary, mlp_binary = train_mlp(X, y_binary, [X.shape[1], 20, 1],
+                                      activation='relu',
+                                      loss_type='binary_cross_entropy',
+                                      learning_rate=0.01,
+                                      num_iterations=100)
+
+predictions_binary = mlp_binary.predict(X)
+# Apply sigmoid for probabilities
+predictions_binary = 1 / (1 + np.exp(-predictions_binary))
+accuracy = np.mean((predictions_binary.flatten() > 0.5) == y_binary)
+print("Binary classification accuracy:", accuracy)
+
+# Direct MLP usage (more control)
+mlp = MLP(layer_sizes=[3, 10, 5, 1], activation='relu')
+loss_fn = mlp.create_loss_function(X, y, 'mse')
+
+# Use with custom gradient descent parameters
+from core.gradient_descent import GradientDescent
+gd = GradientDescent(learning_rate=0.005, num_iterations=200)
+gd.set_weights(mlp.weights)
+gd.set_loss_function(loss_fn)
+trained_weights = gd.compute_weight_update()
+
+# Update MLP and make predictions
+mlp.weights = trained_weights
+final_predictions = mlp.predict(X)
 ```
-
-**Data Generation:**
-```python
-from core.data.data_loader import DataLoader
-
-# Load pre-generated datasets
-loader = DataLoader()
-
-# Load different datasets
-X_1d, y_1d = loader.load_1d_data()        # Simple 1D regression
-X_3d, y_3d = loader.load_3d_data()        # Multi-dimensional
-X_large, y_large = loader.load_large_noisy_data()  # Large noisy dataset
-X_clean, y_clean = loader.load_clean_data()        # Small clean dataset
-
-# Get dataset information
-loader.get_dataset_info('linear_1d.csv')
-```
-
-**Configuration:**
-- Each algorithm includes configurable parameters at the top of the script
-- Modify dataset generation parameters for different problem complexities
-- Adjust hyperparameters like learning rate, epochs, and regularization
-- Enable/disable visualization for training progress and results
-
-**Output:**
-- Training progress with loss curves and accuracy metrics
-- Model performance evaluation and comparison metrics
 
 ## 📝 Performance Notes
 
@@ -321,6 +338,7 @@ loader.get_dataset_info('linear_1d.csv')
 ├── mini_rag.py             # RAG pipeline implementation
 ├── core/                    # Core ML algorithms folder
 │   ├── gradient_descent.py     # Advanced gradient descent with PyTorch integration
+│   ├── mlp.py                  # Multi-Layer Perceptron implementation
 │   ├── regressions.py          # Unified regression algorithms (linear, polynomial, logistic)
 │   └── data/                   # Data generation and management
 │       ├── generate_data.py       # Synthetic dataset generator
@@ -345,7 +363,9 @@ Each implementation is designed to be modular and extensible. Feel free to:
 - Extend the gradient descent implementation with additional optimizers (Adam, RMSprop, etc.)
 - Add new synthetic data generators for different problem types
 - Implement additional loss functions and regularization techniques
-- Add new fundamental algorithms to the core collection (neural networks, clustering, etc.)
+- Add new fundamental algorithms to the core collection (CNNs, RNNs, attention mechanisms, etc.)
+- Extend the MLP implementation with advanced features (dropout, batch normalization, etc.)
+- Contribute to upcoming ASR implementations
 
 ## 📝 Notes
 
