@@ -125,26 +125,55 @@ A comprehensive collection of fundamental machine learning algorithms implemente
 - Convergence criteria and early stopping
 - Synthetic data generation with noise control
 
-### 5. Automatic Speech Recognition (ASR) - Coming Soon! 🎙️
-Advanced speech recognition implementations featuring modern deep learning architectures and techniques.
+### 5. Whisper Fine-Tuning for Deepfake Detection (`asr/WhisperFT.py`)
+A complete implementation for fine-tuning OpenAI's Whisper model on audio deepfake detection tasks using frozen encoder weights and custom classification heads.
+
+**Features:**
+- Uses pre-trained Whisper-Tiny (39M parameters) with frozen encoder weights
+- Custom LSTM-based classification head for temporal feature processing
+- Bidirectional LSTM with configurable hidden size and layers
+- Supports binary classification (Real vs. Fake audio)
+- Automatic audio preprocessing (16kHz resampling, 30-second chunks)
+- Device-agnostic training (CPU/CUDA/MPS support)
+- Handles variable-length audio with padding/truncation
+
+**Architecture:**
+- **Frozen Whisper Encoder**: Extracts rich audio features without fine-tuning
+- **Bidirectional LSTM**: Processes temporal sequences (128 hidden units, 2 layers)
+- **Classification Head**: Multi-layer feedforward network (256→128→2 neurons)
+- **Regularization**: Dropout layers (0.1) and gradient clipping for stable training
+
+**Key Techniques:**
+- Transfer learning with frozen pre-trained weights
+- LSTM-based temporal modeling for audio sequences
+- Mel-spectrogram feature extraction via Whisper's preprocessing
+- Custom dataset loader with filename-based labeling ("original" files → Real class)
+- Batch collate functions for variable-length audio handling
+
+**Dataset Support:**
+- Automatic detection of Real vs. Fake audio based on filename patterns
+- Support for common audio formats (WAV, MP3, FLAC, M4A, OGG, AAC)
+- Configurable data directories for train/validation/test splits
+- Built-in class balancing and distribution reporting
+
+### 6. Automatic Speech Recognition (ASR) - Additional Implementations Coming Soon! 🎙️
+Future ASR implementations featuring modern deep learning architectures and techniques.
 
 **Planned Implementations:**
-- **Whisper-Tiny Fine-Tuning**: Fine-tuning OpenAI's lightweight Whisper model for specific domains
 - **Wav2Vec for Named-Entity-Recognition**: Using Wav2Vec 2.0 for speech-based NER tasks
+- **Interactive RL-based Learning**: User corrections for continuous model improvement
 
-**Planned Features:**
-- **Whisper-Tiny Customization**: Fine-tuning the compact Whisper model on domain-specific audio data
+**Upcoming Features:**
 - **Speech-based NER**: Named-entity-recognition directly from audio using Wav2Vec representations
-- **RL-based Interactive Online Learning**: User based corrections or affirmations for accuracy improvement.
-- **Transfer Learning**: Leveraging pre-trained models for efficient training on limited data
-- **Audio Preprocessing**: Feature extraction and normalization for optimal model performance
-- **Evaluation Metrics**: Performance assessment for both transcription accuracy and NER precision
+- **RL-based Interactive Online Learning**: User based corrections or affirmations for accuracy improvement
+- **Advanced Transfer Learning**: Leveraging multiple pre-trained speech models
+- **Real-time Processing**: Streaming audio classification and transcription
 
 **Upcoming Techniques:**
 - Self-supervised speech representation learning with Wav2Vec 2.0
-- Fine-tuning strategies for lightweight transformer models
-- Speech-to-text with named-entity extraction pipeline
-- Transfer learning from large pre-trained speech models
+- Reinforcement learning from human feedback (RLHF) for speech tasks
+- Multi-modal audio-text processing pipelines
+- Advanced attention mechanisms for speech understanding
 
 *Stay tuned for comprehensive implementations with detailed documentation and examples!*
 
@@ -164,6 +193,7 @@ tqdm>=4.65.0
 Additional dependencies for specific implementations:
 - **RAG System**: `chromadb`, `sentence-transformers`, `langchain`, `pypdf`
 - **Custom Tokenizer**: `jinaai` models from Hugging Face
+- **Whisper Fine-Tuning**: `openai-whisper`, `torch`, `torchaudio`
 
 ## 🛠️ Installation
 
@@ -180,6 +210,9 @@ pip install chromadb sentence-transformers langchain pypdf
 
 # For custom tokenizer with Jina models:
 pip install sentence-transformers
+
+# For Whisper fine-tuning on deepfake detection:
+pip install openai-whisper torchaudio
 ```
 
 ## 🚀 Usage
@@ -291,6 +324,97 @@ mlp.weights = trained_weights
 final_predictions = mlp.predict(X)
 ```
 
+### Whisper Fine-Tuning for Deepfake Detection
+
+```python
+import sys
+sys.path.append('asr')
+from WhisperFT import WhisperFT, AudioDataset, audio_collate_fn
+from torch.utils.data import DataLoader
+
+# Initialize model with custom LSTM configuration
+model = WhisperFT(
+    model_name="tiny",           # Whisper model size (tiny, base, small, medium, large)
+    lstm_hidden_size=128,        # LSTM hidden dimension
+    lstm_num_layers=2            # Number of LSTM layers
+)
+
+# Define classification head for binary classification (Real vs. Fake)
+model.define_ft_heads(num_classes=2)
+
+# Load data from directories containing audio files
+# Files with "original" in name are labeled as class 1 (Real)
+# All other files are labeled as class 0 (Fake)
+train_dataset, val_dataset, test_dataset = model.load_data(
+    train_path="path/to/training_data",
+    val_path="path/to/validation_data", 
+    test_path="path/to/test_data"
+)
+
+# Create data loaders with custom collate function
+train_loader = DataLoader(
+    train_dataset,
+    batch_size=8,
+    shuffle=True,
+    collate_fn=audio_collate_fn  # Handles variable-length audio
+)
+
+val_loader = DataLoader(
+    val_dataset,
+    batch_size=8,
+    shuffle=False,
+    collate_fn=audio_collate_fn
+)
+
+# Train the model
+model.train_model(
+    train_loader=train_loader,
+    val_loader=val_loader,
+    epochs=10,
+    lr=1e-3,
+    batch_size=8
+)
+
+# Test the model
+test_loader = DataLoader(
+    test_dataset,
+    batch_size=8,
+    shuffle=False,
+    collate_fn=audio_collate_fn
+)
+
+test_results = model.test(test_loader)
+print(f"Test Accuracy: {test_results['accuracy']:.4f}")
+print(f"Test Loss: {test_results['loss']:.4f}")
+```
+
+**Direct Usage for Single Audio File:**
+```python
+# Transcribe audio (basic Whisper functionality)
+transcript = model.transcribe("path/to/audio/file.wav")
+print(f"Transcription: {transcript}")
+
+# Classify single audio file for deepfake detection
+import torch
+audio_tensor = torch.from_numpy(whisper.load_audio("path/to/audio/file.wav"))
+audio_batch = audio_tensor.unsqueeze(0)  # Add batch dimension
+prediction = model.forward_batch(audio_batch)
+probability = torch.softmax(prediction, dim=1)
+print(f"Real Audio Probability: {probability[0][1]:.4f}")
+print(f"Fake Audio Probability: {probability[0][0]:.4f}")
+```
+
+**Configuration:**
+- Modify `lstm_hidden_size` and `lstm_num_layers` for different model capacities
+- Adjust batch size based on available memory (audio files are memory-intensive)
+- Change `model_name` to use larger Whisper models (base, small, medium, large)
+- Customize learning rate and epochs based on dataset size and complexity
+
+**Output:**
+- Trained model weights saved automatically during training
+- Comprehensive validation metrics (accuracy, loss, precision, recall)
+- Real-time training progress with loss curves and performance metrics
+
 ## 📝 Performance Notes
 
 ### Hardware Optimization
@@ -302,6 +426,7 @@ final_predictions = mlp.predict(X)
 - **DistilBERT**: ~5-10 minutes training on MacBook Air M3 (5K examples)
 - **Custom Tokenizer**: Real-time encoding for 4500 tokens
 - **RAG System**: Efficient retrieval from large document collections
+- **Whisper Fine-Tuning**: ~2-5 minutes per epoch on MacBook Air M3 (1K audio files, batch size 8)
 
 ## 🔧 Customization
 
@@ -328,6 +453,13 @@ final_predictions = mlp.predict(X)
 3. Add regularization techniques for improved generalization
 4. Implement additional evaluation metrics for your use case
 
+**Whisper Fine-Tuning:**
+1. Modify `AudioDataset` labeling logic for your specific classification task
+2. Adjust LSTM architecture (hidden size, layers, bidirectional) for your data complexity
+3. Experiment with different Whisper model sizes (tiny→large) based on accuracy requirements
+4. Implement custom data augmentation techniques for audio (time stretching, noise addition)
+5. Add support for multi-class classification by changing `num_classes` parameter
+
 ## 📁 Project Structure
 
 ```
@@ -337,6 +469,10 @@ final_predictions = mlp.predict(X)
 ├── distilbert_finetune.py   # DistilBERT sentiment analysis
 ├── custom_tokenizer.py      # Extended context tokenizer
 ├── mini_rag.py             # RAG pipeline implementation
+├── asr/                     # Audio Speech Recognition implementations
+│   ├── WhisperFT.py            # Whisper fine-tuning for deepfake detection
+│   ├── RLTinyConformer.py      # RL-based conformer (in development)
+│   └── __init__.py             # Package initialization
 ├── core/                    # Core ML algorithms folder
 │   ├── gradient_descent.py     # Advanced gradient descent with PyTorch integration
 │   ├── mlp.py                  # Multi-Layer Perceptron implementation
@@ -349,7 +485,10 @@ final_predictions = mlp.predict(X)
 │       ├── linear_large_noisy.csv # Large noisy dataset
 │       ├── linear_clean.csv       # Small clean dataset
 │       └── linear_1d_plot.png     # Visualization of 1D data
+├── utils/                   # Utility functions and scripts
+│   └── merge_dirs.py           # Directory merging utility for dataset management
 ├── db/                      # Database storage for RAG system
+├── debug_whisper.py         # Whisper implementation debugging script
 └── __init__.py             # Package initialization
 ```
 
