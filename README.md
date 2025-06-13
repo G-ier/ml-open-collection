@@ -1,6 +1,6 @@
 # ML/NLP Implementations Collection
 
-This repository contains multiple machine learning and natural language processing implementations, each demonstrating different techniques and approaches for various tasks.
+This repository contains multiple machine learning and natural language processing implementations, each demonstrating different techniques and approaches for various tasks. All these implementations are from separate projects and are integrated here as standalone apps or barebone code, which can be adapted in specific downstream applications.
 
 ## 🚀 Implementations Overview
 
