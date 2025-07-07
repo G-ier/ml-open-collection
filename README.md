@@ -1,4 +1,5 @@
 # ML/NLP Implementations Collection
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-%E2%98%95%EF%B8%8F-ffdd00?style=flat-square)](https://buymeacoffee.com/gier)
 
 This repository contains multiple machine learning and natural language processing implementations, each demonstrating different techniques and approaches for various tasks. All these implementations are from separate projects and are integrated here as standalone apps or barebone code, which can be adapted in specific downstream applications.
 
@@ -324,7 +325,7 @@ mlp.weights = trained_weights
 final_predictions = mlp.predict(X)
 ```
 
-### Whisper Fine-Tuning for Deepfake Detection
+### Whisper Fine-Tuning for Niche Deepfake Detection
 
 ```python
 import sys
