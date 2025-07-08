@@ -511,6 +511,10 @@ Each implementation is designed to be modular and extensible. Feel free to:
 ## 📝 Notes
 
 - Models are not included in the repository due to size constraints
-- All implementations prioritize educational clarity over production optimization
 - Device selection is automatic based on available hardware (MPS > CUDA > CPU)
 - The RAG system creates a persistent database in the `db/` directory for efficient retrieval
+
+## Support
+
+If you find this project useful, please consider supporting me by buying me a coffee:<br/><br/>
+<a href="https://coff.ee/gier" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="220" ></a>
